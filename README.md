@@ -21,7 +21,7 @@ each consisting of a handle, follower count, comment, and last modified timestam
 
 ## 📂 Project Structure
 
-.  
+ .  
 ├── Makefile  
 ├── database.c  
 ├── database.h  
@@ -57,29 +57,27 @@ Example Commands
 Command	Description
 list	Lists all records in a formatted table
 add HANDLE FOLLOWERS	Adds a new handle entry (prompts for comment)
-update HANDLE FOLLOWERS	Updates an existing entry (prompts for comment)
-find HANDLE	Displays one record
-sort	Sorts records alphabetically by handle
-swap HANDLE1 HANDLE2	Swaps the order of two records
-save	Writes database to database.csv
-exit	Quits the program safely (warns if unsaved changes)
-exit fr	Forces exit without saving
+update HANDLE FOLLOWERS		Updates an existing entry (prompts for comment)
+find HANDLE  	Displays one record
+sort	  Sorts records alphabetically by handle
+swap HANDLE1 HANDLE2	  Swaps the order of two records
+save	  Writes database to database.csv
+exit	  Quits the program safely (warns if unsaved changes)
+exit fr	  Forces exit without saving
 
 💾 Data Format
 The database is stored as a CSV file:
-
-
 HANDLE,FOLLOWERS,COMMENT,DATE_MODIFIED
+
 Example:
-
-
 techguru,1024,Great engagement,1712608500
+
 🧩 Contributors
 Name	Role	Contributions
-Jerry Luo	Developer	File I/O, CSV parsing, and database write operations
-Louis Renard	Developer	Core database structure and memory management
-Andra Yvonne Ivanciu	Developer	Add, update, list, and sort features
-Alexander Dai	Developer	Find, swap, and command loop implementation
+Jerry Luo  	Developer	  File I/O, CSV parsing, and database write operations
+Louis Renard	  Developer	  Core database structure and memory management
+Andra Yvonne Ivanciu  	Developer  	Add, update, list, and sort features
+Alexander Dai	  Developer  	Find, swap, and command loop implementation
 
 🧠 Notes
 Comments cannot contain commas or newlines.
