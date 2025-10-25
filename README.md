@@ -21,7 +21,7 @@ each consisting of a handle, follower count, comment, and last modified timestam
 
 ## 📂 Project Structure
 
-.
+.  
 ├── Makefile  
 ├── database.c  
 ├── database.h  
