@@ -99,9 +99,6 @@ Comments are limited to 64 characters.
 
 The program dynamically resizes the database as new entries are added.
 
-📜 License
-This project is released under the MIT License.
-Feel free to use, modify, and distribute.
 
 🧰 Example Session
 shell
