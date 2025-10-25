@@ -50,12 +50,11 @@ make clean
 
 🧠 Usage
 Run the program in your terminal:
-
-
 ./igdb
+
 Example Commands
-Command	Description
-list	Lists all records in a formatted table
+
+list	 Lists all records in a formatted table
 add HANDLE FOLLOWERS	Adds a new handle entry (prompts for comment)
 update HANDLE FOLLOWERS		Updates an existing entry (prompts for comment)
 find HANDLE  	Displays one record
