@@ -1,5 +1,3 @@
-# Instagram-Database-CLI-Tool
-
 # IGDB - Instagram Database CLI Tool
 
 IGDB is a lightweight C program that manages a simple database of social media handles.  
