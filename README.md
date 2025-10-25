@@ -45,16 +45,13 @@ This will produce an executable named igdb.
 
 To clean object files:
 
-bash
-Copy code
 make clean
 (Add a clean rule if desired.)
 
 🧠 Usage
 Run the program in your terminal:
 
-bash
-Copy code
+
 ./igdb
 Example Commands
 Command	Description
