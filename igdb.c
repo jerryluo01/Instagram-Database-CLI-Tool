@@ -1,0 +1,406 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#include "database.h"
+
+
+// Programmer : Andra Yvonne Ivanciu
+// Created    : 2025/04/08
+// Purpose    : Create a helper method that creates the formatted table
+
+void print_record_table(Record *r)
+{
+        char        date_buf[20];
+        time_t      timestamp;
+        struct tm   *time_info;
+
+        // Convert to time_t and convert to local time
+        timestamp = (time_t)r->date_modified;
+        time_info = localtime(&timestamp);
+        strftime(date_buf, 20, "%Y-%m-%d %H:%M", time_info);
+
+        // Create the table
+        printf("%-20.20s | %-10lu | %-16s | %-30.30s\n",r->handle, r->follower_count, date_buf, r->comment);
+}
+
+// Programmer : Andra Yvonne Ivanciu
+// Created    : 2025/04/08
+// Purpose    : Implement a list method
+
+void list(Database *db)
+{
+        // Add the titles for the table
+        printf("%-20s | %-10s | %-16s | %-30s\n","HANDLE","FOLLOWERS","LAST MODIFIED","COMMENT");
+        printf("---------------------|------------|------------------|------------------------------\n");
+
+        // Print each record into the table
+        for (size_t i = 0; i < db->size; i++)
+        {
+
+          Record *r = db_index(db, i);
+          print_record_table(r);
+        }
+}
+// Programmer    : Andra Yvonne Ivanciu
+// Created       : 2025/04/08
+// Purpose       : Implement an add method
+
+void add(Database *db, char *args)
+{
+        char *handle            = strtok(args, " ");
+        char *followers_str     = strtok(NULL, " ");
+        char *comment           = NULL;
+        size_t len              = 0;
+        long followers;
+        char *endptr;
+
+        // Check if arguments are missing
+        if (!handle || !followers_str)
+        {
+
+          printf("Error: usage: add HANDLE FOLLOWERS\n");
+          return;
+        }
+
+        // Check if handle is too long
+        if (strlen(handle) >= 32)
+        {
+          printf("Error: handle too long.\n");
+          return;
+        }
+
+        // Check if handle already exists
+        if (db_lookup(db, handle))
+        {
+          printf("Error: handle %s already exists.\n", handle);
+          return;
+        }
+
+        // Convert it into a number
+        followers = strtol(followers_str, &endptr, 10);
+
+        // Check if the conversion is good
+        if (*endptr != '\0' || followers < 0)
+        {
+          printf("Error: follower count must be an integer.\n");
+          return;
+        }
+
+        // Create comment
+        printf("Comment> ");
+        getline(&comment, &len, stdin);
+
+        // Remove trailing newlines
+        comment[strcspn(comment, "\n")] = '\0';
+
+        // Check if comment has commas
+        if (strchr(comment, ','))
+        {
+          printf("Error: comment cannot contain commas.\n");
+          free(comment);
+          return;
+        }
+
+        // Check if comment has newlines just in case
+        if (strchr(comment, '\n'))
+        {
+          printf("Error: comment cannot contain new lines.\n");
+                free(comment);
+                return;
+        }
+
+
+        // Create a new record
+        Record r;
+
+        // Copy handle
+        strncpy(r.handle, handle, 32);
+
+        // Set follower count
+        r.follower_count   = followers;
+
+        // Copy comment
+        strncpy(r.comment, comment, 64);
+
+        // Set timestamp
+        r.date_modified = time(NULL);
+
+        // Add the data
+        db_append(db, &r);
+
+        // Free buffer
+        free(comment);
+}
+
+// Programmer    : Andra Yvonne Ivanciu
+// Created       : 2025/04/10
+// Purpose       : Implement an update method
+
+void update(Database *db, char *args)
+{
+        char *handle            = strtok(args, " ");
+        char *followers_str     = strtok(NULL, " ");
+        char *comment           = NULL;
+        size_t len              = 0;
+        char *endptr;
+        long followers;
+
+
+
+        // Check if arguments are missing
+        if (!handle || !followers_str)
+        {
+          printf("Error: usage: update HANDLE FOLLOWERS\n");
+          return;
+        }
+
+        Record *record = db_lookup(db, handle);
+
+        // Check if handle exists
+        if (!record)
+        {
+          printf("Error: no entry with handle %s\n", handle);
+          return;
+        }
+
+        // Convert it into a number
+        followers = strtol(followers_str, &endptr, 10);
+
+        // Check if the conversion is good
+        if (*endptr != '\0' || followers < 0)
+        {
+          printf("Error: follower count must be an integer\n");
+          return;
+        }
+
+        // Get comment from user
+        printf("Comment> ");
+        if (getline(&comment, &len, stdin) == -1)
+        {
+          printf("Error reading comment\n");
+          return;
+        }
+
+        // Remove trailing newline
+        comment[strcspn(comment, "\n")] = '\0';
+
+        // Check if comment has comma
+        if (strchr(comment, ','))
+        {
+          printf("Error: comment cannot contain commas.\n");
+          free(comment);
+          return;
+        }
+
+        // Check if comment has new line
+        if (strchr(comment, '\n'))
+        {
+                printf("Error: comment cannot contain new lines.\n");
+                free(comment);
+                return;
+        }
+
+        // Update the record
+        record->follower_count = followers;
+        strncpy(record->comment, comment, 64);
+        record->date_modified = time(NULL);
+
+        free(comment);
+}
+
+// Programmer    : Andra Yvonne Ivanciu
+// Created       : 2025/04/08
+// Purpose       : Implement a save method where it writes the data in database.csv
+
+void save(Database *db)
+{
+
+        db_write_csv(db, "database.csv");
+        printf("Wrote %d records.\n", db->size);
+}
+
+// Programmer    : Andra Yvonne Ivanciu
+// Created       : 2025/04/08
+// Purpose       : Implement a sort method where it I use bubble sort to put the files in sortyed order
+
+void sort(Database *db)
+{
+        for (size_t i = 0; i < db->size - 1; i++) {
+          for (size_t j = 0; j < db->size - i - 1; j++)
+          {
+                if (strcmp(db->records[j].handle, db->records[j+1].handle) > 0)
+              {
+                                Record temp = db->records[j];
+                                db->records[j] = db->records[j+1];
+                                db->records[j+1] = temp;
+                }
+          }
+        }
+    printf("Sorted.\n");
+}
+
+// Programmer   : Alexander Dai
+// Created      : 2025/04/09
+// Purpose      : Displays the table but only with the info of the handle
+
+void find(Database *db, const char *handle) {
+        if (!handle) {
+          puts("Error: usage: find HANDLE");
+          return;
+        }
+
+        Record *record = db_lookup(db, handle); // Find handle
+
+        // Checking if record exists
+        if (record == NULL) {
+          printf("Not Found\n");
+                return;
+        }
+        // Table header (same as list)
+        printf("%-20s | %-10s | %-16s | %-30s\n",
+                        "HANDLE", "FOLLOWERS", "LAST MODIFIED", "COMMENT");
+        printf("---------------------|------------|------------------|------------------------------\n");
+
+        print_record_table(record);
+}
+
+// Programmer   : Alexander Dai
+// Created      : 2025/04/09
+// Purpose      : Changes the order of two existing records
+
+void swap(Database *db, const char *handle1, const char *handle2) {
+        Record *record1 = db_lookup(db, handle1);
+        Record *record2 = db_lookup(db, handle2);
+
+        // Checking if both records exist
+        if (record1 == NULL || record2 == NULL) {
+          printf("Not Found\n");
+          return;
+        }
+
+        // Exits if they're the same record
+        if (record1 == record2) {
+          return;
+        }
+
+        // Using temporary value (tmp) to swap records
+        Record tmp = *record1;
+        *record1 = *record2;
+        *record2 = tmp;
+
+}
+
+int main_loop(Database * db)
+{
+// Programmer   : Alexander Dai
+// Created      : 2025/04/08
+// Purpose      : Displays last modified date
+
+        Record new_record;
+
+        // Get current timestamp
+        new_record.date_modified = time(NULL);
+
+        void display_record(Record *r) {
+          time_t raw_time = (time_t)r->date_modified;
+          struct tm *time_info = localtime(&raw_time);
+
+          char buffer[80];
+          // Time format
+          strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M", time_info);
+                printf("Last modified: %s\n", buffer);
+        }
+
+
+
+
+        int is_modified  = 0;
+        char *input      = NULL;
+        size_t len       = 0;
+
+        printf("Loaded %d records.\n", db->size);
+
+        while (1)
+        {
+          printf("> ");
+
+          if (getline(&input, &len, stdin) == -1) {
+              break;
+          }
+
+          char *cmd = strtok(input, " \n");
+
+          if (!cmd) {
+              continue;
+          }
+
+          if (strcmp(cmd, "list") == 0) {
+              list(db);
+          }
+
+          else if (strcmp(cmd, "add") == 0) {
+              add(db, strtok(NULL, "\n"));
+              is_modified = 1;
+          }
+
+          else if (strcmp(cmd, "update") == 0) {
+              update(db, strtok(NULL, "\n"));
+              is_modified = 1;
+
+          }
+          else if (strcmp(cmd, "sort") == 0) {
+              sort(db);
+              is_modified = 1;
+
+          }
+
+          else if (strcmp(cmd, "save") == 0) {
+              save(db);
+              is_modified = 0;
+          }
+
+          else if (strcmp(cmd, "find") == 0)
+          {
+              find(db, strtok(NULL, "\n"));
+              is_modified = 0;
+          }
+
+          else if (strcmp(cmd, "swap") == 0)
+          {
+              char *handle1 = strtok(NULL, " \n");
+                        char *handle2 = strtok(NULL, " \n");
+
+              if (!handle1 || !handle2) {
+                printf("Error: usage: swap HANDLE1 HANDLE2\n");
+                continue;
+              }
+
+              swap(db, handle1, handle2);
+              is_modified = 1;
+          }
+
+          else if (strcmp(cmd, "exit") == 0) {
+              char *next = strtok(NULL, " \n");
+              if (is_modified && (!next || strcmp(next, "fr") != 0)) {
+                printf("Error: you did not save your changes. Use 'exit fr' to force exit anyway.\n");
+              } else {
+                free(input);
+                return 0;
+              }
+
+          }
+        }
+
+        free(input);
+        return 0;
+}
+
+
+int main(void)
+{
+    Database db = db_create();
+    db_load_csv(&db, "database.csv");
+    return main_loop(&db);
+}
