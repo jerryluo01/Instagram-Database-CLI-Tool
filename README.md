@@ -22,14 +22,11 @@ each consisting of a handle, follower count, comment, and last modified timestam
 ## 📂 Project Structure
 
 .
-├── Makefile
-├── database.c
-├── database.h
-├── igdb.c
+├── Makefile  
+├── database.c  
+├── database.h  
+├── igdb.c  
 └── database.csv (generated/loaded automatically)
-
-yaml
-Copy code
 
 - **database.c** - Core database operations: create, append, lookup, load, and write to CSV  
 - **database.h** - Data structures and function declarations  
@@ -74,12 +71,11 @@ exit fr	Forces exit without saving
 💾 Data Format
 The database is stored as a CSV file:
 
-pgsql
-Copy code
+
 HANDLE,FOLLOWERS,COMMENT,DATE_MODIFIED
 Example:
 
-Copy code
+
 techguru,1024,Great engagement,1712608500
 🧩 Contributors
 Name	Role	Contributions
@@ -99,8 +95,7 @@ The program dynamically resizes the database as new entries are added.
 
 
 🧰 Example Session
-shell
-Copy code
+
 $ ./igdb
 Loaded 3 records.
 > list
